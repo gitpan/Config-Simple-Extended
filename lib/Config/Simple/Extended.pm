@@ -4,16 +4,15 @@ use warnings;
 use strict;
 use base qw( Config::Simple );
 use UNIVERSAL qw( isa can );
-# use UNIVERSAL qw( isa can VERSION );
 use Data::Dumper;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 #
 #  This is intended to provide, before this is complete
 #    ->inherit() to inherit configurations, done;
 #    ->parse_config_directory() choosing configuration by url;
-#    ->heredoc() to parse heredoc configurations;
+#    ->heredoc() to parse heredoc configurations (still pending);
 #    anything else?
 #
 
@@ -38,7 +37,10 @@ sub parse_url_for_config_path {
     $scriptpath =~ s/t\///;
   }
   $url = $scriptpath."conf.d/".$url;
-  $self->{'conf_path'} = $url;
+  # print STDERR "The \$url is $url.\n";
+  # $self->{'conf_path'} = $url;
+  # print STDERR "The conf_path is $self->{'conf_path'}.\n";
+  # print STDERR Dumper(\$self);
   return $url;
 } # END parse_url_for_config_path
 
@@ -83,7 +85,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.04
+Version 0.07
 
 =cut
 

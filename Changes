@@ -1,5 +1,8 @@
 Revision history for Config-Simple-Extended
 
+0.07 	Tue Oct 21 01:49:46 EDT 2008
+	Restored missing test script from ::Inherit
+
 0.06	Fri Aug 8 03:19:32 EDT 2008
 	Reborn as Config::Simple::Extended
 	with new ->parse_url_for_config_path() method.
