@@ -11,12 +11,12 @@ use lib qw { lib };
 
 BEGIN {
         use_ok( 'Config::Simple' );
-        use_ok( 'Config::Simple::Inherit' );
+        use_ok( 'Config::Simple::Extended' );
 }
 
 my @methods = ('inherit');
 foreach my $method (@methods){
-  can_ok('Config::Simple::Inherit',$method);
+  can_ok('Config::Simple::Extended',$method);
 }
 
 my $base_dir = '.';
@@ -29,19 +29,19 @@ isa_ok($cfg,'Config::Simple');
 
 my $cfg_inherit;
 # print STDERR "$base_dir/$file_inherit \n";
-$cfg_inherit = Config::Simple::Inherit->inherit({ base_config => '', filename => "$base_dir/$file_inherit" });
-isa_ok($cfg_inherit,'Config::Simple','Config::Simple::Inherit, w/o base_config object returns a Config::Simple object, and ');
+$cfg_inherit = Config::Simple::Extended->inherit({ base_config => '', filename => "$base_dir/$file_inherit" });
+isa_ok($cfg_inherit,'Config::Simple','Config::Simple::Extended, w/o base_config object returns a Config::Simple object, and ');
 
 # print STDERR Dumper(\$cfg_inherit);
 
-$cfg_inherit = Config::Simple::Inherit->inherit({ base_config => $cfg, filename => "$base_dir/$file_inherit" });
+$cfg_inherit = Config::Simple::Extended->inherit({ base_config => $cfg, filename => "$base_dir/$file_inherit" });
 isa_ok($cfg,'Config::Simple','The base configuration');
 isa_ok($cfg_inherit,'Config::Simple','The child configuration');
 
 my $expected_results = get_expected_results();
 cmp_deeply($cfg_inherit->{'_DATA'},$expected_results,'New Configuration appropriately inherited from and overloaded base configuration.');
 
-my $cfg_inherit_again = Config::Simple::Inherit->inherit({ base_config => $cfg_inherit, filename => "$base_dir/$file_inherit_again" });
+my $cfg_inherit_again = Config::Simple::Extended->inherit({ base_config => $cfg_inherit, filename => "$base_dir/$file_inherit_again" });
 isa_ok($cfg_inherit_again,'Config::Simple','The grand child configuration');
 
 $expected_results->{'default'}->{'6'} = [ 'ftp(1):/public_html/mpfcu/lib/MPFCU/more_inherited_new_again.pm' ];
@@ -57,7 +57,7 @@ is($cfg_inherit_again->{'_FILE_NAMES'}[2],"$base_dir/$file_inherit_again",'Objec
 
 # print "Given a base configuration, and a file which inherits from that configuration, and another from that . . . " . Dumper(\$cfg_inherit);
 
-diag( "Testing Config::Simple::Inherit $Config::Simple::Inherit::VERSION, Perl $], $^X" );
+diag( "Testing Config::Simple::Extended $Config::Simple::Extended::VERSION, Perl $], $^X" );
 
 
 1;

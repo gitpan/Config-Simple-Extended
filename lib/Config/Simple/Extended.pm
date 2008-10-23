@@ -6,7 +6,7 @@ use base qw( Config::Simple );
 use UNIVERSAL qw( isa can );
 use Data::Dumper;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 #
 #  This is intended to provide, before this is complete
@@ -85,7 +85,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
