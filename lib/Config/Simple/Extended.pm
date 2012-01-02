@@ -6,7 +6,7 @@ use base qw( Config::Simple );
 use UNIVERSAL qw( isa can );
 use Data::Dumper;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 #
 #  This is intended to provide, before this is complete
@@ -85,7 +85,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
@@ -148,8 +148,8 @@ Now I can write a constructor like this:
       my $self = {};
     
       if(defined($defaults->{'config_file'})){
-        $self->{'cfg'} = Config::Simple::Extended->new(
-          { filename => $defaults->{'config_file'} } );
+        $self->{'cfg'} = Config::Simple->new(
+          $defaults->{'config_file'} );
       } elsif(defined($defaults->{'config_files'})){
         my $cfg;
         undef($cfg);
@@ -244,6 +244,10 @@ Hugh Esco, C<< <hesco at campaignfoundations.com> >>
 
 =head1 BUGS
 
+On January 2nd, 2012 I resolved a long standing documentation bug which
+I believe (but have in no way confirmed) was introduced by an interface 
+change to Config::Simple.  
+
 Please report any bugs or feature requests to
 C<bug-config-simple-inherit at rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Config-Simple-Extended>.
@@ -294,7 +298,7 @@ for the applications I write.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008 Hugh Esco, all rights reserved.
+Copyright 2008-2012 Hugh Esco, all rights reserved.
 
 This program is released under the following license: Gnu
 Public License.
