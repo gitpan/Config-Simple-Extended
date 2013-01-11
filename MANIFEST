@@ -14,3 +14,4 @@ t/simplified_inherit_again.ini
 t/simplified_inherit.ini
 t/simplified.ini
 
+META.json                                Module JSON meta-data (added by MakeMaker)

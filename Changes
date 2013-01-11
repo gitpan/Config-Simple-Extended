@@ -1,5 +1,17 @@
 Revision history for Config-Simple-Extended
 
+0.10    Fri Jan 11 00:09:39 EST 2013
+        Now uses ->param(), ->vars() and ->get_block() methods 
+        for overloading, rather than addressing internal data 
+        structure directly.  This is intended to make this 
+        module less fragile to changes in inherited Config::Simple.  
+        Now also uses File::PathInfo to provide an absolute path 
+        and interacts with config files using an absolute path.  
+        Also accepts a debug key on the interface, using that to be 
+        informative about what it is up to.
+
+0.09    Unknown
+
 0.08 	Thu Oct 23 01:45:25 EDT 2008
 	Updates t/10-inherit.t coreccting references to 
 	the ::Inherit module.

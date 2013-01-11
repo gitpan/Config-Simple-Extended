@@ -55,7 +55,14 @@ is($cfg_inherit_again->{'_FILE_NAMES'}[0],"$base_dir/$file",'Object has correct 
 is($cfg_inherit_again->{'_FILE_NAMES'}[1],"$base_dir/$file_inherit",'Object has correct child config file.');
 is($cfg_inherit_again->{'_FILE_NAMES'}[2],"$base_dir/$file_inherit_again",'Object has correct grand child config file.');
 
-# print "Given a base configuration, and a file which inherits from that configuration, and another from that . . . " . Dumper(\$cfg_inherit);
+=pod
+
+print "Given a base configuration, \n"
+    . "\tand a file which inherits from that configuration, \n"
+    . "\tand another from that . . . " .
+    Dumper(\$cfg_inherit->get_block("default"));
+
+=cut
 
 diag( "Testing Config::Simple::Extended $Config::Simple::Extended::VERSION, Perl $], $^X" );
 

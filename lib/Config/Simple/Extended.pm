@@ -4,9 +4,10 @@ use warnings;
 use strict;
 use base qw( Config::Simple );
 use UNIVERSAL qw( isa can );
+use File::PathInfo;
 use Data::Dumper;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 #
 #  This is intended to provide, before this is complete
@@ -47,17 +48,21 @@ sub parse_url_for_config_path {
 sub inherit {
   my $class = shift;
   my $args = shift;
+  my $f = new File::PathInfo;
+
   # print STDERR Dumper(\$args);
   { no strict 'refs';
     unless(defined($args->{'base_config'}) &&
         UNIVERSAL::isa($args->{'base_config'},'Config::Simple')) {
-      # print STDERR "Now we create the first Config::Simple object using $args->{'filename'}; none already exists.\n";
-      # return "->inherit() has returned with debugging message.";
+      print "the base_config undef, return Config::Simple object \n" 
+          if( $args->{'debug'} );
       return Config::Simple->new( filename => $args->{'filename'} );
     }
   }
   my @cfg_filenames;
   my $cfg = $args->{'base_config'};
+  print "The base_config exists and includes this data: "
+      . Dumper( $cfg->{'_DATA'} ) if( $args->{'debug'} && 0 );
   if(defined($cfg->{'_FILE_NAMES'})){
     push @cfg_filenames, @{$cfg->{'_FILE_NAMES'}};
     push @cfg_filenames, $args->{'filename'};
@@ -68,15 +73,40 @@ sub inherit {
     die "We have a Config::Simple object, without an initial '_FILE_NAME' value.\n";
   }
   $cfg->{'_FILE_NAMES'} = \@cfg_filenames;
-  my $cfg_overload = Config::Simple->new( filename => $args->{'filename'} );
+  $f->set( $args->{'filename'} ) or die('file does not exist');
+  my $cfg_file = $f->abs_path;
+  my $cfg_overload = Config::Simple->new( $cfg_file );
+  print 'Our $cfg_overload applies this file: ' 
+      . $args->{'filename'} 
+      . ' and looks like this: ' 
+      . Dumper( $cfg_overload )
+          if( $args->{'debug'} );
 
-  foreach my $stanza_key (keys %{$cfg_overload->{'_DATA'}}){
-    foreach my $param_key (keys %{$cfg_overload->{'_DATA'}->{$stanza_key}}){
-      $cfg->{'_DATA'}->{$stanza_key}->{$param_key} = $cfg_overload->{'_DATA'}->{$stanza_key}->{$param_key};
+  my $stanzas = get_stanzas($cfg_overload);
+  foreach my $stanza ( @{$stanzas} ){
+    my %stanza = %{$cfg_overload->get_block( $stanza )};
+    foreach my $param_key (keys %stanza){
+      print "\t$stanza.$param_key being overloaded with " 
+          . $cfg_overload->param("$stanza.$param_key") 
+          . "\n" if( $args->{'debug'} );
+      $cfg->param( "$stanza.$param_key", $cfg_overload->param("$stanza.$param_key") );
     }
   }
 
   return $cfg; 
+}
+
+sub get_stanzas {
+  my $cfg = shift;
+  my @stanzas;
+  my %stanza_keys;
+  my %config_overload = $cfg->vars();
+  foreach ( keys %config_overload ){
+    $_ =~ s/\..*//;
+    $stanza_keys{$_} = 1;
+  }
+  @stanzas = keys %stanza_keys;
+  return \@stanzas;
 }
 
 =head1 NAME
@@ -85,7 +115,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
@@ -126,8 +156,9 @@ objects which need them, like this:
     my $object = My::New::Module->new({ 'cfg' => $self->{'cfg'} });
 
 assuming that you are inside an object method whose constructor
-stored the configuration hash at its own 'cfg' key, as I tend
-to do.
+stored the configuration hash at its own 'cfg' key, as I used  
+to do, or in a ->cfg attribute as I tend to do these days now 
+that Moose has come along.
 
 or to needlessly duplicate the object in your memory overhead,
 as I did it when I was first digging around in the innards of
@@ -135,6 +166,8 @@ Config::Simple, and learning how to use it:
 
     my $new_object = My::New::Module->new({ 
        'config_file' => $self->{'cfg'}->{'_FILE_NAME'} });
+
+But don't do that.  It will make your dumpers needlessly confusing.  
 
 Now I can write a constructor like this:
 
@@ -172,6 +205,10 @@ Now I can write a constructor like this:
     }
 
 =back
+
+or, with Moose, perhaps adapt that as a ->_build_cfg() method 
+to populate a ->cfg() attribute.  That is how I've used this 
+module since I started using Moose.  
 
 Making it possible to use it like so:
 
@@ -236,6 +273,14 @@ created configuration first, then using the installation
 default configuration to overwrite it, it would be possible
 to prevent abuse and enforce system wide constraints.
 
+=head2 my $array_ref = get_stanzas( $cfg );
+
+If you use a hierarchical configuration file structure, with values 
+assigned to keys inside of stanzas, you can use this method to 
+pull a reference to a list of the stanzas currently defined 
+in your configuration file.  In an ini files this would be 
+denoted as [stanza_name], as if it were a one element arrayref.  
+
 =cut
 
 =head1 AUTHOR
@@ -248,15 +293,25 @@ On January 2nd, 2012 I resolved a long standing documentation bug which
 I believe (but have in no way confirmed) was introduced by an interface 
 change to Config::Simple.  
 
+On January 11th, 2013, I hardened this module by using the 
+interface, rather than the internals of Config::Simple.  
+
+It seems that ->inherit will not overwrite a configuration 
+value for a key which does not already exist in the inherited 
+from ->cfg object.  That is something which should be easy to 
+rectify but which seems barely outside the scope of this evening's 
+work when I'm supposed to be working on something else which 
+depends on these changes.  I had not noticed this prior to these 
+revisions and this may represent regression.  Hope this does not 
+break production installations for others.  I will try to watch 
+the smoke tests and RT and respond if I see these recent enhancements 
+make problems for folks.  
+
 Please report any bugs or feature requests to
 C<bug-config-simple-inherit at rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Config-Simple-Extended>.
 I will be notified, and then you'll automatically be notified of progress on
 your bug as I make changes.
-
-I also do business as CampaignFoundations.com,
-where we host an issues que, available at:
-L<http://www.campaignfoundations.com/project/Config-Simple-Extended>
 
 =head1 SUPPORT
 
@@ -298,7 +353,7 @@ for the applications I write.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008-2012 Hugh Esco, all rights reserved.
+Copyright 2008-2013 Hugh Esco, all rights reserved.
 
 This program is released under the following license: Gnu
 Public License.
@@ -317,3 +372,4 @@ learned of after releasing version 0.03 of this module to cpan.
 =cut
 
 1; # End of Config::Simple::Extended
+
