@@ -9,6 +9,7 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Config/Simple/Extended.pm',
     PL_FILES            => {},
     PREREQ_PM => {
+    'File::PathInfo' => 0,
         'Test::More' => 0,
   'Text::ParseWords' => 0,
     'Config::Simple' => 0,
