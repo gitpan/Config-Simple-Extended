@@ -10,7 +10,7 @@ use Data::Dumper;
 use lib "$FindBin::Bin/../../../local/lib/perl5";
 use File::PathInfo;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 #
 #  This is intended to provide, before this is complete
@@ -118,7 +118,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.12
+Version 0.13
 
 =cut
 
