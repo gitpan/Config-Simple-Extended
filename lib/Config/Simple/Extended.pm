@@ -3,114 +3,13 @@ package Config::Simple::Extended;
 use warnings;
 use strict;
 use base qw( Config::Simple );
-# use UNIVERSAL qw( isa can );
 use FindBin;
 use Data::Dumper;
 
 use lib "$FindBin::Bin/../../../local/lib/perl5";
 use File::PathInfo;
 
-our $VERSION = '0.13';
-
-#
-#  This is intended to provide, before this is complete
-#    ->inherit() to inherit configurations, done;
-#    ->parse_config_directory() choosing configuration by url;
-#    ->heredoc() to parse heredoc configurations (still pending);
-#    anything else?
-#
-
-sub parse_url_for_config_path {
-  my $self = shift;
-  my($url)=@_;
-  my $scriptpath = $0;
-  my $scriptname = $0;
-  my $default_domain = 'localhost.supporters';
-  $scriptname =~ s/^(.*)\///;
-  $scriptpath =~ s/$scriptname//;
-  $url =~ s/https:\/\///;
-  $url =~ s/http:\/\///;
-  $url =~ s/\//./g;
-  # print STDERR "The scriptname is: ",$scriptname,"\n";
-  # print STDERR "The scriptpath is: ",$scriptpath,"\n";
-  $url =~ s/$scriptname$//;
-  $url =~ s/\.$//;
-  # account for command line tests
-  if($url eq 'localhost'){
-    $url = $default_domain;
-    $scriptpath =~ s/t\///;
-  }
-  $url = $scriptpath."conf.d/".$url;
-  # print STDERR "The \$url is $url.\n";
-  # $self->{'conf_path'} = $url;
-  # print STDERR "The conf_path is $self->{'conf_path'}.\n";
-  # print STDERR Dumper(\$self);
-  return $url;
-} # END parse_url_for_config_path
-
-sub inherit {
-  my $class = shift;
-  my $args = shift;
-  my $f = new File::PathInfo;
-
-  # print STDERR Dumper(\$args);
-  { no strict 'refs';
-    unless(defined($args->{'base_config'}) &&
-        UNIVERSAL::isa($args->{'base_config'},'Config::Simple')) {
-      print "the base_config undef, return Config::Simple object \n" 
-          if( $args->{'debug'} );
-      return Config::Simple->new( filename => $args->{'filename'} );
-    }
-  }
-  my @cfg_filenames;
-  my $cfg = $args->{'base_config'};
-  print "The base_config exists and includes this data: "
-      . Dumper( $cfg->{'_DATA'} ) if( $args->{'debug'} && 0 );
-  if(defined($cfg->{'_FILE_NAMES'})){
-    push @cfg_filenames, @{$cfg->{'_FILE_NAMES'}};
-    push @cfg_filenames, $args->{'filename'};
-  } elsif(defined($cfg->{'_FILE_NAME'})) { 
-    push @cfg_filenames, $cfg->{'_FILE_NAME'};
-    push @cfg_filenames, $args->{'filename'};
-  } else {
-    die "We have a Config::Simple object, without an initial '_FILE_NAME' value.\n";
-  }
-  $cfg->{'_FILE_NAMES'} = \@cfg_filenames;
-  $f->set( $args->{'filename'} ) or die('file does not exist');
-  my $cfg_file = $f->abs_path;
-  my $cfg_overload = Config::Simple->new( $cfg_file );
-  print 'Our $cfg_overload applies this file: ' 
-      . $args->{'filename'} 
-      . ' and looks like this: ' 
-      . Dumper( $cfg_overload )
-          if( $args->{'debug'} );
-
-  my $stanzas = get_stanzas($cfg_overload);
-  foreach my $stanza ( @{$stanzas} ){
-    my %stanza = %{$cfg_overload->get_block( $stanza )};
-    foreach my $param_key (keys %stanza){
-      print "\t$stanza.$param_key being overloaded with " 
-          . $cfg_overload->param("$stanza.$param_key") 
-          . "\n" if( $args->{'debug'} );
-      $cfg->param( "$stanza.$param_key", $cfg_overload->param("$stanza.$param_key") );
-    }
-  }
-
-  return $cfg; 
-}
-
-sub get_stanzas {
-  my $cfg = shift;
-  my @stanzas;
-  my %stanza_keys;
-  my %config = $cfg->vars();
-  foreach ( keys %config ){
-    $_ =~ s/\..*//;
-    $stanza_keys{$_} = 1;
-  }
-  @stanzas = keys %stanza_keys;
-  return \@stanzas;
-}
+our $VERSION = '0.14';
 
 =head1 NAME
 
@@ -118,7 +17,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =cut
 
@@ -141,6 +40,12 @@ my $job_cfg = Config::Simple::Extended->inherit(
      base_config => $client_cfg,
      filename => '$cfg_path/client_name/app_job_id.ini',
 );
+
+  This is intended to provide, before this is complete
+    ->inherit() to inherit configurations, done;
+    ->parse_config_directory() choosing configuration by url;
+    ->heredoc() to parse heredoc configurations (still pending);
+    anything else?
 
 =head1 EXAMPLES
 
@@ -240,6 +145,36 @@ of the same application.  Each url is aliased to the same code
 installation, and this method sorts out which configuration
 to provide it.
 
+=cut
+
+sub parse_url_for_config_path {
+  my $self = shift;
+  my($url)=@_;
+  my $scriptpath = $0;
+  my $scriptname = $0;
+  my $default_domain = 'localhost.supporters';
+  $scriptname =~ s/^(.*)\///;
+  $scriptpath =~ s/$scriptname//;
+  $url =~ s/https:\/\///;
+  $url =~ s/http:\/\///;
+  $url =~ s/\//./g;
+  # print STDERR "The scriptname is: ",$scriptname,"\n";
+  # print STDERR "The scriptpath is: ",$scriptpath,"\n";
+  $url =~ s/$scriptname$//;
+  $url =~ s/\.$//;
+  # account for command line tests
+  if($url eq 'localhost'){
+    $url = $default_domain;
+    $scriptpath =~ s/t\///;
+  }
+  $url = $scriptpath."conf.d/".$url;
+  # print STDERR "The \$url is $url.\n";
+  # $self->{'conf_path'} = $url;
+  # print STDERR "The conf_path is $self->{'conf_path'}.\n";
+  # print STDERR Dumper(\$self);
+  return $url;
+} # END parse_url_for_config_path
+
 =head2 ->Config::Simple::Extended->inherit();
 
 This is copied verbatim from ->Config::Simple::Inherit->inherit();
@@ -276,6 +211,59 @@ created configuration first, then using the installation
 default configuration to overwrite it, it would be possible
 to prevent abuse and enforce system wide constraints.
 
+=cut
+
+sub inherit {
+  my $class = shift;
+  my $args = shift;
+  my $f = new File::PathInfo;
+
+  # print STDERR Dumper(\$args);
+  { no strict 'refs';
+    unless(defined($args->{'base_config'}) &&
+        UNIVERSAL::isa($args->{'base_config'},'Config::Simple')) {
+      print "the base_config undef, return Config::Simple object \n" 
+          if( $args->{'debug'} );
+      return Config::Simple->new( filename => $args->{'filename'} );
+    }
+  }
+  my @cfg_filenames;
+  my $cfg = $args->{'base_config'};
+  print "The base_config exists and includes this data: "
+      . Dumper( $cfg->{'_DATA'} ) if( $args->{'debug'} && 0 );
+  if(defined($cfg->{'_FILE_NAMES'})){
+    push @cfg_filenames, @{$cfg->{'_FILE_NAMES'}};
+    push @cfg_filenames, $args->{'filename'};
+  } elsif(defined($cfg->{'_FILE_NAME'})) { 
+    push @cfg_filenames, $cfg->{'_FILE_NAME'};
+    push @cfg_filenames, $args->{'filename'};
+  } else {
+    die "We have a Config::Simple object, without an initial '_FILE_NAME' value.\n";
+  }
+  $cfg->{'_FILE_NAMES'} = \@cfg_filenames;
+  $f->set( $args->{'filename'} ) or die('file does not exist');
+  my $cfg_file = $f->abs_path;
+  my $cfg_overload = Config::Simple->new( $cfg_file );
+  print 'Our $cfg_overload applies this file: ' 
+      . $args->{'filename'} 
+      . ' and looks like this: ' 
+      . Dumper( $cfg_overload )
+          if( $args->{'debug'} );
+
+  my $stanzas = get_stanzas($cfg_overload);
+  foreach my $stanza ( @{$stanzas} ){
+    my %stanza = %{$cfg_overload->get_block( $stanza )};
+    foreach my $param_key (keys %stanza){
+      print "\t$stanza.$param_key being overloaded with " 
+          . $cfg_overload->param("$stanza.$param_key") 
+          . "\n" if( $args->{'debug'} );
+      $cfg->param( "$stanza.$param_key", $cfg_overload->param("$stanza.$param_key") );
+    }
+  }
+
+  return $cfg; 
+}
+
 =head2 my $array_ref = get_stanzas( $cfg );
 
 If you use a hierarchical configuration file structure, with values 
@@ -285,6 +273,19 @@ in your configuration file.  In an ini files this would be
 denoted as [stanza_name], as if it were a one element arrayref.  
 
 =cut
+
+sub get_stanzas {
+  my $cfg = shift;
+  my @stanzas;
+  my %stanza_keys;
+  my %config = $cfg->vars();
+  foreach ( keys %config ){
+    $_ =~ s/\..*//;
+    $stanza_keys{$_} = 1;
+  }
+  @stanzas = keys %stanza_keys;
+  return \@stanzas;
+}
 
 =head1 AUTHOR
 
