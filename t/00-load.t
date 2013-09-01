@@ -1,8 +1,8 @@
-#!perl -T
+#!perl 
 
 use Test::More tests => 1;
 
-use lib qw{ lib };
+use lib qw{ lib local/lib/perl5 };
 
 BEGIN {
 	use_ok( 'Config::Simple::Extended' );

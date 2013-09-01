@@ -1,13 +1,13 @@
-#!/usr/bin/perl -wT
+#!/usr/bin/perl 
 use strict;
 use warnings;
 
 use Data::Dumper;
 use Test::More ( 'no_plan' );
-use Test::Deep;
 
 use lib qw { . };
-use lib qw { lib };
+use lib qw { lib local/lib/perl5 };
+use Test::Deep;
 
 BEGIN {
         use_ok( 'Config::Simple' );

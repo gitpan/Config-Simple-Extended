@@ -3,11 +3,14 @@ package Config::Simple::Extended;
 use warnings;
 use strict;
 use base qw( Config::Simple );
-use UNIVERSAL qw( isa can );
-use File::PathInfo;
+# use UNIVERSAL qw( isa can );
+use FindBin;
 use Data::Dumper;
 
-our $VERSION = '0.11';
+use lib "$FindBin::Bin/../../../local/lib/perl5";
+use File::PathInfo;
+
+our $VERSION = '0.12';
 
 #
 #  This is intended to provide, before this is complete
@@ -100,8 +103,8 @@ sub get_stanzas {
   my $cfg = shift;
   my @stanzas;
   my %stanza_keys;
-  my %config_overload = $cfg->vars();
-  foreach ( keys %config_overload ){
+  my %config = $cfg->vars();
+  foreach ( keys %config ){
     $_ =~ s/\..*//;
     $stanza_keys{$_} = 1;
   }
@@ -115,7 +118,7 @@ Config::Simple::Extended - Extend Config::Simple w/ Configuration Inheritance, c
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
