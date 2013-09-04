@@ -12,6 +12,7 @@ WriteMakefile(
         'Test::More' => 0,
   'Text::ParseWords' => 0,
     'Config::Simple' => 0,
+    'File::PathInfo' => 0,
       'Data::Dumper' => 0,
         'Test::Deep' => 0,
               'Test' => 0,

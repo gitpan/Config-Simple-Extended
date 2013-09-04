@@ -34,6 +34,7 @@
          "requires" : {
             "Config::Simple" : "0",
             "Data::Dumper" : "0",
+            "File::PathInfo" : "0",
             "Test" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0",
@@ -43,5 +44,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.14"
+   "version" : "0.15"
 }
